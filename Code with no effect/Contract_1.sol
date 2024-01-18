@@ -13,7 +13,7 @@ contract AdminControlled {
 
     // Modifier to restrict access to admin only
     modifier onlyAdmin() {
-        msg.sender == admin;
+        msg.sender == admin; // <== vuln
         _;
     }
 
