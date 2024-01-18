@@ -22,11 +22,11 @@ contract AgreementRegistry {
         string memory terms
     ) public {
         bytes32 id = keccak256(
-            abi.encodePacked(
+            abi.encodePacked( 
                 partyA,
                 partyB
             )
-        );
+        ); // <== vuln
 
         agreements[id] = Agreement({
             id: id,
