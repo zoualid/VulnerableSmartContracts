@@ -14,7 +14,7 @@ contract VotingSystem {
     // Creates a new vote
     function createVote(string[] memory candidates, string memory userId, string memory salt) public {
         require(candidates.length > 0, "No candidates provided");
-        bytes32 voteId = keccak256(abi.encodePacked(userId, salt));
+        bytes32 voteId = keccak256(abi.encodePacked(userId, salt));  // <== vuln
         Vote storage v = votes[voteId];
         v.exists = true;
         for(uint i = 0; i < candidates.length; i++) {
@@ -27,7 +27,7 @@ contract VotingSystem {
         require(votes[voteId].exists, "Vote does not exist");
         require(!votes[voteId].voted[userId], "Already voted");
 
-        bytes32 candidateHash = keccak256(abi.encodePacked(candidate, salt));
+        bytes32 candidateHash = keccak256(abi.encodePacked(candidate, salt));  // <== vuln
         require(isValidCandidate(voteId, candidateHash), "Invalid candidate");
 
         votes[voteId].voted[userId] = true;
@@ -63,7 +63,7 @@ contract VotingSystem {
     // Returns the number of votes for a specific candidate in a vote
     function getVotesForCandidate(bytes32 voteId, string memory candidate, string memory salt) public view returns (uint256) {
         require(votes[voteId].exists, "Vote does not exist");
-        bytes32 candidateHash = keccak256(abi.encodePacked(candidate, salt));
+        bytes32 candidateHash = keccak256(abi.encodePacked(candidate, salt));  // <== vuln
         require(isValidCandidate(voteId, candidateHash), "Invalid candidate");
         return votes[voteId].results[candidateHash];
     }
