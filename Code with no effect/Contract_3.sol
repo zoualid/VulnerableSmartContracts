@@ -7,7 +7,7 @@ contract DepositBox {
     function deposit(uint amount) public payable {
         require(msg.value == amount, 'incorrect amount');
         // Should update user balance
-        balance[msg.sender] == amount;
+        balance[msg.sender] == amount;  // <== vuln
     }
 }
 
