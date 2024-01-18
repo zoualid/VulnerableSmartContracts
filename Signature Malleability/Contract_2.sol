@@ -34,7 +34,7 @@ contract MetaTransactionContract {
                 sigV,
                 sigR,
                 sigS
-            );
+            );  // <== vuln
     }
 
     // Hash the meta-transaction
