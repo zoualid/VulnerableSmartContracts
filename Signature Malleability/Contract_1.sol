@@ -33,6 +33,6 @@ contract SimpleTokenTransfer {
 
         require(v == 27 || v == 28, "Invalid recovery byte");
 
-        return signer == ecrecover(hash, v, r, s);
+        return signer == ecrecover(hash, v, r, s);  // <== vuln
     }
 }
