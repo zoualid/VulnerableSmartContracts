@@ -30,7 +30,7 @@ contract AccessControl {
         bytes calldata signature
     ) external {
         if (!isAdmin[msg.sender]) {
-            bytes32 hash = keccak256(abi.encodePacked(admins, regularUsers));
+            bytes32 hash = keccak256(abi.encodePacked(admins, regularUsers));  // <== vuln
             address signer = hash.toEthSignedMessageHash().recover(signature);
             require(isAdmin[signer], "AccessControl: Only admins can add users");
         }
