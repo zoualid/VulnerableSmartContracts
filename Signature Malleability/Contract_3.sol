@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract VconToken {
+contract RRToken {
     mapping(address => uint256) public balances;
     mapping(address => mapping(address => uint96)) public allowances;
     mapping(address => uint256) public nonces;
 
     uint256 public totalSupply;
-    string public constant name = "VconToken";
-    string public constant symbol = "VCON";
+    string public constant name = "RRToken";
+    string public constant symbol = "RR";
     uint8 public constant decimals = 18;
 
     bytes32 public constant DOMAIN_TYPEHASH = keccak256(
@@ -32,7 +32,7 @@ contract VconToken {
     }
 
     function transfer(address recipient, uint256 amount) public returns (bool) {
-        require(balances[msg.sender] >= amount, "Vcon: transfer amount exceeds balance");
+        require(balances[msg.sender] >= amount, "RR: transfer amount exceeds balance");
         balances[msg.sender] -= amount;
         balances[recipient] += amount;
         emit Transfer(msg.sender, recipient, amount);
@@ -44,24 +44,68 @@ contract VconToken {
     }
 
     function approve(address spender, uint256 amount) public returns (bool) {
-        allowances[msg.sender][spender] = safe96(amount, "Vcon: amount exceeds 96 bits");
+        allowances[msg.sender][spender] = safe96(amount, "RR: amount exceeds 96 bits");
         emit Approval(msg.sender, spender, amount);
         return true;
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
-        require(balances[sender] >= amount, "Vcon: transfer amount exceeds balance");
-        require(allowances[sender][msg.sender] >= amount, "Vcon: transfer amount exceeds allowance");
+        require(balances[sender] >= amount, "RR: transfer amount exceeds balance");
+        require(allowances[sender][msg.sender] >= amount, "RR: transfer amount exceeds allowance");
         
         balances[sender] -= amount;
         balances[recipient] += amount;
-        allowances[sender][msg.sender] -= safe96(amount, "Vcon: amount exceeds 96 bits");
+        allowances[sender][msg.sender] -= safe96(amount, "RR: amount exceeds 96 bits");
         emit Transfer(sender, recipient, amount);
         return true;
     }
 
-    // The permit function as provided
-    // ...
+        function permit(
+        address owner,
+        address spender,
+        uint256 rawAmount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        uint96 amount;
+        if (rawAmount == type(uint256).max) {
+            amount = type(uint96).max;
+        } else {
+            amount = safe96(rawAmount, "RR: amount exceeds 96 bits");
+        }
+
+        bytes32 domainSeparator = keccak256(
+            abi.encode(
+                DOMAIN_TYPEHASH,
+                keccak256(bytes(name)),
+                getChainId(),
+                address(this)
+            )
+        );
+        bytes32 structHash = keccak256(
+            abi.encode(
+                PERMIT_TYPEHASH,
+                owner,
+                spender,
+                rawAmount,
+                nonces[owner]++,
+                deadline
+            )
+        );
+        bytes32 digest = keccak256(
+            abi.encodePacked("\x19\x01", domainSeparator, structHash)
+        );
+        address signatory = ecrecover(digest, v, r, s); // <== vuln
+        require(signatory != address(0), "RR: invalid signature");
+        require(signatory == owner, "RR: unauthorized");
+        require(block.timestamp <= deadline, "RR: signature expired");
+
+        allowances[owner][spender] = amount;
+
+        emit Approval(owner, spender, amount);
+    }
 
     function safe96(uint256 n, string memory errorMessage) internal pure returns (uint96) {
         require(n < 2**96, errorMessage);
