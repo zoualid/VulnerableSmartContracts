@@ -17,7 +17,7 @@ contract Wallet {
         balance[msg.sender] = previousBalance - amount;
 
         // Attempt to send amount from the contract to msg.sender
-        msg.sender.call.value(amount);
+        msg.sender.call.value(amount);  // <== vuln
     }
 }
 
